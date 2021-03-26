@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.alibaba.DataBase.RepoEntity;
 import com.example.alibaba.R;
+import com.example.alibaba.SetOnClick;
 
 import org.jetbrains.annotations.NotNull;
 
