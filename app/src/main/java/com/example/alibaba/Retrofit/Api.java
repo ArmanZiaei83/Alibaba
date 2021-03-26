@@ -1,5 +1,8 @@
 package com.example.alibaba.Retrofit;
 
+import com.example.alibaba.Models.GetRepo;
+import com.example.alibaba.Models.Repo;
+
 import java.util.List;
 
 import io.reactivex.Observable;
