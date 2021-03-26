@@ -64,6 +64,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
         TextView repoName;
         ImageView repoImage;
         SetOnClick setOnClick;
+
         public MyViewHolder(@NonNull @NotNull View itemView , SetOnClick setOnClick) {
             super(itemView);
             repoName = itemView.findViewById(R.id.repo_name);
