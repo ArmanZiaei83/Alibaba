@@ -1,5 +1,6 @@
 package com.example.alibaba.ViewModel;
 
+import com.example.alibaba.DataHandler;
 import com.example.alibaba.Models.GetRepo;
 import com.example.alibaba.Models.Repo;
 import com.example.alibaba.RxGetRepo;
@@ -14,6 +15,9 @@ import io.reactivex.disposables.Disposable;
 public class ViewModel extends androidx.lifecycle.ViewModel {
 
     RxGetRepo rxGetRepo = new RxGetRepo();
+    RxRepo rxRepo = new RxRepo();
+
+    DataHandler handler = new DataHandler();
 
     public void repoSubscriber(Observable<Repo> repoObservable){
         repoObservable.subscribe(new Observer<Repo>() {
@@ -50,17 +54,17 @@ public class ViewModel extends androidx.lifecycle.ViewModel {
 
             @Override
             public void onNext(@NotNull GetRepo getRepo) {
-                if(dataBase.repoDao().isExist(getRepo.getId())){
-                    deleteData(getRepo.getId());
-                    addToDb(getRepo.getId(), getRepo.getForks_count() , getRepo.getStargazers_count() , getRepo.getDescription() ,
+                if(handler.getDataBase().repoDao().isExist(getRepo.getId())){
+
+                    handler.deleteData(getRepo.getId());
+                    handler.addToDb(getRepo.getId(), getRepo.getForks_count() , getRepo.getStargazers_count() , getRepo.getDescription() ,
                             getRepo.getCollaborators_url(), getRepo.getFull_name() , getRepo.getHtml_url());
 
                 }else {
-                    addToDb(getRepo.getId(), getRepo.getForks_count() , getRepo.getStargazers_count() , getRepo.getDescription() ,
+                    handler.addToDb(getRepo.getId(), getRepo.getForks_count() , getRepo.getStargazers_count() , getRepo.getDescription() ,
                             getRepo.getCollaborators_url(), getRepo.getFull_name() , getRepo.getHtml_url());
                 }
             }
-
             @Override
             public void onError(@NotNull Throwable e) {
                 makeSout("Error >>> " + e.getMessage());
