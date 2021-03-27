@@ -25,16 +25,18 @@ import io.reactivex.schedulers.Schedulers;
 
 public class DataHandler {
 
-    Context context;
     DataBase dataBase;
+    Context context;
 
     public DataHandler(Context context) {
         this.context = context;
-
         dataBase = Room.databaseBuilder(context , DataBase.class , "repoinfo.db").allowMainThreadQueries().build();
     }
 
-    public void addToDb(int id , int forks , int stars , String desc , String collaborators , String userOwner, String url ){
+    public DataBase getDataBase() {
+        return dataBase;
+    }
+    public void addToDb(int id , int forks , int stars , String desc , String collaborators , String userOwner,String url ){
         Completable.fromAction(new Action() {
             @Override
             public void run() throws Exception {
@@ -65,7 +67,6 @@ public class DataHandler {
         Completable.fromAction(new Action() {
             @Override
             public void run() throws Exception {
-
                 dataBase.repoDao().deleteDataById(id);
             }
         }).subscribeOn(Schedulers.io())
@@ -78,54 +79,16 @@ public class DataHandler {
 
                     @Override
                     public void onComplete() {
-                        makeSout("Deleting Process Finished");
+                        makeSout("<< Data Deleted >>");
                     }
 
                     @Override
                     public void onError(@NotNull Throwable e) {
-
+                        makeSout("Error in deleting data : " + e.getMessage());
                     }
                 });
     }
-
-    public void getAllData(List<RepoEntity> mList){
-
-        Completable.fromAction(new Action() {
-            @Override
-            public void run() throws Exception {
-                dataBase.repoDao().getAllData().subscribe(new Consumer<List<RepoEntity>>() {
-                    @Override
-                    public void accept(List<RepoEntity> list) throws Exception {
-                        for (int i = 0; i < list.size(); i++) {
-                            RepoEntity repoEntity = list.get(i);
-                            mList.add(repoEntity);
-                        }
-                    }
-                });
-            }
-        }).subscribe(new CompletableObserver() {
-            @Override
-            public void onSubscribe(@NotNull Disposable d) {
-                makeSout("Getting Data  .. .. .. ");
-            }
-
-            @Override
-            public void onComplete() {
-                makeSout("Getting Data Finished");
-            }
-
-            @Override
-            public void onError(@NotNull Throwable e) {
-                makeSout("Error in getting data : " + e.getMessage());
-            }
-        });
-    }
-
-    private void makeSout(String message) {
+    public void makeSout(String message){
         System.out.println(message);
-    }
-
-    public DataBase getDataBase() {
-        return dataBase;
     }
 }

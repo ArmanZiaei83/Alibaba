@@ -30,30 +30,18 @@ import io.reactivex.schedulers.Schedulers;
 
 public class ViewModel extends androidx.lifecycle.ViewModel {
 
-    DataBase dataBase;
-    Context context;
+    RxRepo rxRepo = new RxRepo();
+    RxGetRepo getRepo = new RxGetRepo();
 
-    public Observable<Repo> getRepo () {
-        return new RetrofitHolder().getApi()
-                .getRepos()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .flatMap(new Function<List<Repo>, ObservableSource<Repo>>() {
-                    @Override
-                    public ObservableSource<Repo> apply(@NotNull List<Repo> repos) throws Exception {
-                        return Observable.fromIterable(repos).subscribeOn(Schedulers.io());
-                    }
-                });
+    DataHandler handler;
+
+    public void prepareHandler(Context context){
+        handler = new DataHandler(context);
     }
 
-    public Observable<GetRepo> getRepoObservable(String owner , String repo){
-        return new RetrofitHolder().getApi()
-                .getRepsDetail(owner , repo)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io());
+    public DataHandler getHandler(){
+        return handler;
     }
-
-    //Repo Model Subscriber :
 
     public void repoSubscriber(Observable<Repo> repoObservable){
         repoObservable.subscribe(new Observer<Repo>() {
@@ -65,7 +53,7 @@ public class ViewModel extends androidx.lifecycle.ViewModel {
             @Override
             public void onNext(@NotNull Repo repo) {
                 System.out.println("repo info : " + repo.getId());
-                detailSubscriber(getRepoObservable(repo.getFull_name().replace("/" + repo.getName(), "")
+                detailSubscriber(getRepo.getRepoObservable(repo.getFull_name().replace("/" + repo.getName(), "")
                         , repo.getName()));
             }
 
@@ -81,8 +69,6 @@ public class ViewModel extends androidx.lifecycle.ViewModel {
         });
     }
 
-
-    //Second Link Subscriber :
     public void detailSubscriber(Observable<GetRepo> getRepoObservable){
         getRepoObservable.subscribe(new Observer<GetRepo>() {
             @Override
@@ -92,13 +78,13 @@ public class ViewModel extends androidx.lifecycle.ViewModel {
 
             @Override
             public void onNext(@NotNull GetRepo getRepo) {
-                if(dataBase.repoDao().isExist(getRepo.getId())){
-                    deleteData(getRepo.getId());
-                    addToDb(getRepo.getId(), getRepo.getForks_count() , getRepo.getStargazers_count() , getRepo.getDescription() ,
+                if(handler.getDataBase().repoDao().isExist(getRepo.getId())){
+                    handler.deleteData(getRepo.getId());
+                    handler.addToDb(getRepo.getId(), getRepo.getForks_count() , getRepo.getStargazers_count() , getRepo.getDescription() ,
                             getRepo.getCollaborators_url(), getRepo.getFull_name() , getRepo.getHtml_url());
 
                 }else {
-                    addToDb(getRepo.getId(), getRepo.getForks_count() , getRepo.getStargazers_count() , getRepo.getDescription() ,
+                    handler.addToDb(getRepo.getId(), getRepo.getForks_count() , getRepo.getStargazers_count() , getRepo.getDescription() ,
                             getRepo.getCollaborators_url(), getRepo.getFull_name() , getRepo.getHtml_url());
                 }
             }
@@ -115,75 +101,11 @@ public class ViewModel extends androidx.lifecycle.ViewModel {
         });
     }
 
-
-    //Room insertor :
-
-    public void addToDb(int id , int forks , int stars , String desc , String collaborators , String userOwner,String url ){
-        Completable.fromAction(new Action() {
-            @Override
-            public void run() throws Exception {
-                dataBase.repoDao().insertData(new RepoEntity(id , forks , stars , desc , collaborators , userOwner , url));
-            }
-        }).observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe(new CompletableObserver() {
-                    @Override
-                    public void onSubscribe(@NotNull Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        makeSout("Added");
-                    }
-
-                    @Override
-                    public void onError(@NotNull Throwable e) {
-                        System.out.println("Error : " + e.getMessage());
-                    }
-                });
-    }
-    public void deleteData(int id){
-
-        Completable.fromAction(new Action() {
-            @Override
-            public void run() throws Exception {
-                dataBase.repoDao().deleteDataById(id);
-            }
-        }).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new CompletableObserver() {
-                    @Override
-                    public void onSubscribe(@NotNull Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        makeSout("Deleting Process Finished");
-                    }
-
-                    @Override
-                    public void onError(@NotNull Throwable e) {
-
-                    }
-                });
+    public void lastStep(){
+        repoSubscriber(rxRepo.getRepo());
     }
 
-    public DataBase getDataBase() {
-        return dataBase;
-    }
     public void makeSout(String message){
         System.out.println(message);
     }
-
-    public void prepareRepo(){
-        repoSubscriber(getRepo());
-    }
-
-    public void createRoomDb(Context context){
-        this.context = context;
-        dataBase = Room.databaseBuilder(context , DataBase.class , "repo_info.db").allowMainThreadQueries().build();
-    }
-
 }

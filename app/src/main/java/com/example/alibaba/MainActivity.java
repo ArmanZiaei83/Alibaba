@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity implements SetOnClick {
     RecyclerView.LayoutManager manager;
 
     ViewModel viewModel;
-    DataBase dataBase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,20 +43,20 @@ public class MainActivity extends AppCompatActivity implements SetOnClick {
         setContentView(R.layout.activity_main);
 
         viewModel = new ViewModelProvider(this).get(ViewModel.class);
+        viewModel.prepareHandler(this);
+        viewModel.lastStep();
 
-        viewModel.createRoomDb(this);
-
-        dataBase = viewModel.getDataBase();
+        getAllData();
 
         initRecyclerView();
 
-        getAllData();
 
     }
 
 
     @Override
     public void onClick(int position) {
+
         entities.get(position);
 
         RepoEntity entity = entities.get(position);
@@ -90,30 +89,35 @@ public class MainActivity extends AppCompatActivity implements SetOnClick {
         Completable.fromAction(new Action() {
             @Override
             public void run() throws Exception {
-                dataBase.repoDao().getAllData().subscribe(new Consumer<List<RepoEntity>>() {
-                    @Override
-                    public void accept(List<RepoEntity> list) throws Exception {
-                        adapter.setEntities(list);
-                        System.out.println("List" + list);
-                    }
-                });
+                viewModel.getHandler().getDataBase().repoDao().getAllData().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Consumer<List<RepoEntity>>() {
+                            @Override
+                            public void accept(List<RepoEntity> repoEntities) throws Exception {
+                                entities = repoEntities;
+
+                                adapter.setEntities(repoEntities);
+                                for (int i = 0; i < repoEntities.size(); i++) {
+                                    System.out.println("Repo Id : " + repoEntities.get(i).getId());
+                                }
+                            }
+                        });
             }
-        }).observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
+        }).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new CompletableObserver() {
                     @Override
                     public void onSubscribe(@NotNull Disposable d) {
-                        makeSout("Getting Data");
+
                     }
 
                     @Override
                     public void onComplete() {
-                        makeSout("Getting Data Finished");
+                        System.out.println("Got Data");
                     }
 
                     @Override
                     public void onError(@NotNull Throwable e) {
-
+                        System.out.println("Error in getting data : " + e.getMessage());
                     }
                 });
     }
