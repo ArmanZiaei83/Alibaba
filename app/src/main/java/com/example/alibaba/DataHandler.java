@@ -28,13 +28,13 @@ public class DataHandler {
     Context context;
     DataBase dataBase;
 
-    public void createDataBase(Context context){
-
+    public DataHandler(Context context) {
         this.context = context;
-        dataBase = Room.databaseBuilder(context , DataBase.class , "repoinfo.db" ).allowMainThreadQueries().build();
+
+        dataBase = Room.databaseBuilder(context , DataBase.class , "repoinfo.db").allowMainThreadQueries().build();
     }
 
-    public void addToDb(int id , int forks , int stars , String desc , String collaborators , String userOwner,String url ){
+    public void addToDb(int id , int forks , int stars , String desc , String collaborators , String userOwner, String url ){
         Completable.fromAction(new Action() {
             @Override
             public void run() throws Exception {
@@ -93,8 +93,7 @@ public class DataHandler {
         Completable.fromAction(new Action() {
             @Override
             public void run() throws Exception {
-                dataBase.repoDao().getAllData().observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
-                        .subscribe(new Consumer<List<RepoEntity>>() {
+                dataBase.repoDao().getAllData().subscribe(new Consumer<List<RepoEntity>>() {
                     @Override
                     public void accept(List<RepoEntity> list) throws Exception {
                         for (int i = 0; i < list.size(); i++) {

@@ -10,7 +10,6 @@ import io.reactivex.schedulers.Schedulers;
 public class RxGetRepo {
 
     public Observable<GetRepo> getRepoObservable(String owner , String repo){
-
         return new RetrofitHolder().getApi()
                 .getRepsDetail(owner , repo)
                 .subscribeOn(Schedulers.io())
