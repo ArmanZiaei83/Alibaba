@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements SetOnClick {
                                 entities = repoEntities;
 
                                 adapter.setEntities(repoEntities);
+                                recyclerView.setAdapter(adapter);
                                 for (int i = 0; i < repoEntities.size(); i++) {
                                     System.out.println("Repo Id : " + repoEntities.get(i).getId());
                                 }
