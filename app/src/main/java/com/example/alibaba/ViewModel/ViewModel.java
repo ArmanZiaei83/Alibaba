@@ -78,15 +78,8 @@ public class ViewModel extends androidx.lifecycle.ViewModel {
 
             @Override
             public void onNext(@NotNull GetRepo getRepo) {
-                if(handler.getDataBase().repoDao().isExist(getRepo.getId())){
-                    handler.deleteData(getRepo.getId());
                     handler.addToDb(getRepo.getId(), getRepo.getForks_count() , getRepo.getStargazers_count() , getRepo.getDescription() ,
                             getRepo.getCollaborators_url(), getRepo.getFull_name() , getRepo.getHtml_url());
-
-                }else {
-                    handler.addToDb(getRepo.getId(), getRepo.getForks_count() , getRepo.getStargazers_count() , getRepo.getDescription() ,
-                            getRepo.getCollaborators_url(), getRepo.getFull_name() , getRepo.getHtml_url());
-                }
             }
 
             @Override

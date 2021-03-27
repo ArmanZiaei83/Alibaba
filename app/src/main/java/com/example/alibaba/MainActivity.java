@@ -94,7 +94,6 @@ public class MainActivity extends AppCompatActivity implements SetOnClick {
                             @Override
                             public void accept(List<RepoEntity> repoEntities) throws Exception {
                                 entities = repoEntities;
-
                                 adapter.setEntities(repoEntities);
                                 recyclerView.setAdapter(adapter);
                                 for (int i = 0; i < repoEntities.size(); i++) {
